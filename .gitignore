@@ -1,3 +1,5 @@
 *.exe
 *.dll
 *.sw?
+bin
+obj
