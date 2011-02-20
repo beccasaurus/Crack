@@ -7,6 +7,11 @@ using System.Collections.Generic;
 
 namespace ConsoleRack {
 
+	/// <summary>Exception that gets raised if the MethodInfo used to instantiate an Application isn't valid (eg. wrong return type)</summary>
+	public class InvalidApplicationException : Exception  {
+		public InvalidApplicationException(string message) : base(message) {}
+	}
+
 	public class ApplicationAttribute : Attribute {
 	}
 
@@ -18,6 +23,7 @@ namespace ConsoleRack {
 	public class Application {
 
 		public Application(MethodInfo method) {
+			ValidateMethod(method);
 			Method = method;
 		}
 
@@ -58,13 +64,36 @@ namespace ConsoleRack {
 		}
 
 		/// <summary>Invoke an Application manually, just passing along string[] args</summary>
-		public virtual Response Invoke(string[] args) {
+		public virtual Response Invoke(params string[] args) {
 			return Invoke(new Request(args));
 		}
 
 		public virtual Response Invoke(Request request) {
 			Console.WriteLine("Application.Invoke({0})", request);
 			return Method.Invoke(null, new object[]{ request }) as Response;
+		}
+
+		/// <summary>Raises an InvalidApplicationException if this method doesn't look valid, so we won't be able to Invoke it properly.</summary>
+		public virtual void ValidateMethod(MethodInfo method) {
+			var errors = new List<string>();
+
+			if (! method.IsStatic)
+				errors.Add("Must be static");
+
+			if (! typeof(Response).IsAssignableFrom(method.ReturnType))
+				errors.Add("Must return a Response");
+
+			var parameters = method.GetParameters();
+			if (parameters.Length != 1)
+				errors.Add("Must take 1 parameter (Request)");
+			else
+				if (! parameters.First().ParameterType.IsAssignableFrom(typeof(Request)))
+					errors.Add("Parameter must be a Request");
+
+			if (errors.Count > 0) {
+				errors.Insert(0, "This method cannot be used as an Application");
+				throw new InvalidApplicationException(string.Join(". ", errors.ToArray()) + ".");
+			}
 		}
 
 		/// <summary>Returns all of the Application found in the given assemblies (see <c>AllFromAssembly</c></summary>
