@@ -13,7 +13,8 @@ namespace ConsoleRack {
 	/// <summary>Main Crack class for things like running a Crack application, finding Middleware, etc</summary>
 	public class Crack {
 
-		static List<Middleware> _middlewares;
+		static List<Middleware>  _middlewares;
+		static List<Application> _applications;
 
 		public static List<Middleware> Middlewares {
 			get {
@@ -23,17 +24,34 @@ namespace ConsoleRack {
 			set { _middlewares = value; }
 		}
 
+		public static List<Application> Applications {
+			get {
+				if (_applications == null) _applications = Application.AllFromAssembly(Assembly.GetCallingAssembly());
+				return _applications;
+			}
+			set { _applications = value; }
+		}
+
+		/// <summary>If only 1 [Application] is found, we run that.</summary>
+		public static void Run(string[] args) {
+			if (Crack.Applications.Count == 1)
+				Run(Crack.Applications.First(), args);
+			else
+				throw new Exception("Unless there is exactly 1 [Application] found, you must pass an Application to Run()");
+		}
+
 		/// <summary>Runs all Crack.Middleware using the provided arguments</summary>
 		/// <remarks>
 		/// If Crack.Middleware has not been set, we look for all [Middleware] in the calling assembly.
 		/// </remarks>
-		public static void Run(string[] args) {
-			var middleware = Crack.Middlewares.FirstOrDefault();
+		public static void Run(Application app, string[] args) {
+			if (Crack.Middlewares.Count == 0)
+				throw new Exception("There are no middleware to invoke ... this will invoke the app ... once we implement that");
 
-			if (middleware == null)
-				throw new Exception("There are no middleware to invoke");
-			else
-				middleware.Invoke(new Request(args)).Execute();
+			// set the application (on the bottom of the stack, to be invoked by the final middleware)
+			Crack.Middlewares.Last().Application = app;
+
+			Crack.Middlewares.First().Invoke(new Request(args)).Execute();
 		}
 
 		/// <summary>Returns a list of all public, static MethodInfo found in the given assembly that have the given attribute type</summary>
@@ -138,7 +156,8 @@ namespace ConsoleRack {
 		}
 
 		public virtual Response Invoke(Request request) {
-			return null;
+			Console.WriteLine("Application.Invoke({0})", request);
+			return Method.Invoke(null, new object[]{ request }) as Response;
 		}
 
 		/// <summary>Returns all of the Application found in the given assemblies (see <c>AllFromAssembly</c></summary>
@@ -164,6 +183,9 @@ namespace ConsoleRack {
 
 		MiddlewareAttribute _attribute;
 
+		/// <summary>This Middleware's inner application that it gets called with and can Invoke()</summary>
+		public virtual Application Application { get; set; }
+
 		/// <summary>Gets the actual MiddlewareAttribute instance that decorates this Middleware's Method</summary>
 		public virtual MiddlewareAttribute MiddlewareAttribute {
 			get {
@@ -173,7 +195,8 @@ namespace ConsoleRack {
 		}
 
 		public override Response Invoke(Request request) {
-			return null;
+			Console.WriteLine("Middleware.Invoke({0})", request);
+			return Method.Invoke(null, new object[]{ request, Application }) as Response;
 		}
 
 		/// <summary>Returns all of the Middleware for the given assemblies (sorted properly!)</summary>
