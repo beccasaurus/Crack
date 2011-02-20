@@ -67,19 +67,19 @@ namespace ConsoleRack.Specs {
 			mw.Invoke("hello", "object").Text.ShouldEqual("You passed args: hello, object\n");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Name_defaults_to_full_method_name() {
 			new Middleware(Method("Foo")).Name.ShouldEqual("ConsoleRack.Specs.MiddlewareSpec.Foo");
 			new Middleware(Method("ObjectParams")).Name.ShouldEqual("ConsoleRack.Specs.MiddlewareSpec.ObjectParams");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Description_defaults_to_null() {
 			new Middleware(Method("Foo")).Description.Should(Be.Null);
 			new Middleware(Method("ObjectParams")).Description.Should(Be.Null);
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Name_can_be_set_manually() {
 			var mw = new Middleware(Method("Foo"));
 			mw.Name.ShouldEqual("ConsoleRack.Specs.MiddlewareSpec.Foo");
@@ -87,7 +87,7 @@ namespace ConsoleRack.Specs {
 			mw.Name.ShouldEqual("Overriden");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Description_can_be_set_manually() {
 			var mw = new Middleware(Method("Foo"));
 			mw.Description.Should(Be.Null);
@@ -96,18 +96,18 @@ namespace ConsoleRack.Specs {
 		}
 
 		[Middleware("my description")]
-		public static Response WithAttribute1(Request req){ return new Response(); }
+		public static Response WithAttribute1(Request req, Application app){ return new Response(); }
 
 		[Middleware("CustomName", "my description")]
-		public static Response WithAttribute2(Request req){ return new Response(); }
+		public static Response WithAttribute2(Request req, Application app){ return new Response(); }
 
 		[Middleware(Name = "CustomName")]
-		public static Response WithAttribute3(Request req){ return new Response(); }
+		public static Response WithAttribute3(Request req, Application app){ return new Response(); }
 
 		[Middleware(Name = "CustomName", Description = "my description")]
-		public static Response WithAttribute4(Request req){ return new Response(); }
+		public static Response WithAttribute4(Request req, Application app){ return new Response(); }
 
-		[Test][Ignore]
+		[Test]
 		public void Name_can_be_set_via_attribute() {
 			new Middleware(Method("WithAttribute1")).Name.ShouldEqual("ConsoleRack.Specs.MiddlewareSpec.WithAttribute1");
 			new Middleware(Method("WithAttribute2")).Name.ShouldEqual("CustomName");
@@ -115,7 +115,7 @@ namespace ConsoleRack.Specs {
 			new Middleware(Method("WithAttribute4")).Name.ShouldEqual("CustomName");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Description_can_be_set_via_attribute() {
 			new Middleware(Method("WithAttribute1")).Description.ShouldEqual("my description");
 			new Middleware(Method("WithAttribute2")).Description.ShouldEqual("my description");
@@ -123,7 +123,7 @@ namespace ConsoleRack.Specs {
 			new Middleware(Method("WithAttribute4")).Description.ShouldEqual("my description");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void can_get_Middleware_by_name_from_a_MiddlewareList() {
 			var list = new MiddlewareList();
 			list.Add(new Middleware(Method("Foo")));
