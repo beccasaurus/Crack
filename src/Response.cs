@@ -20,15 +20,35 @@ namespace ConsoleRack {
 		public Response(string stdout) : this() {
 			STDOUT.WriteLine(stdout);
 		}
+		public Response(string stdout, params object[] objects) : this() {
+			STDOUT.WriteLine(stdout, objects);
+		}
 
 		StringBuilder _stdout_builder, _stderr_builder;
 		StringWriter _stdout, _stderr;
 
 		public virtual int ExitCode { get; set; }
 		
+		/// <summary>This response's STDOUT to write to</summary>
 		public virtual TextWriter STDOUT { get { return _stdout; } }
 
+		/// <summary>Shortcut to STDOUT</summary>
+		public virtual TextWriter Out { get { return STDOUT; } }
+
+		/// <summary>This response's STDERR to write to</summary>
 		public virtual TextWriter STDERR { get { return _stderr; } }
+
+		/// <summary>Shortcut to STDERR</summary>
+		public virtual TextWriter Error { get { return STDERR; } }
+
+		/// <summary>Returns all of the text that has been written to STDOUT</summary>
+		public virtual string OutputText { get { return _stdout_builder.ToString(); } }
+
+		/// <summary>Returns all of the text that has been written to STDERR</summary>
+		public virtual string ErrorText { get { return _stderr_builder.ToString(); } }
+
+		/// <summary>Shortcut to OutputText</summary>
+		public virtual string Text { get { return _stdout_builder.ToString(); } }
 
 		/// <summary>Actually executes this Response, writing to Console.Out, Console.Error, and exiting the process using the ExitCode</summary>
 		public virtual int Execute() {

@@ -22,11 +22,28 @@ namespace ConsoleRack {
 		}
 
 		ApplicationAttribute _attribute;
+		string _name;
 
 		/// <summary>The actual MethodInfo implementation that was decorated with [Application]</summary>
 		public virtual MethodInfo Method { get; set; }
 
+		/// <summary>This Application's name.  Defaults to the full name of the method by may be overriden.</summary>
+		public virtual string Name {
+			get { return _name ?? MethodFullName; }
+			set { _name = value;                  }
+		}
+
+		public virtual string MethodFullName {
+			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
+		}
+
+		public virtual string Description { get; set; }
+
 		/// <summary>Gets the actual ApplicationAttribute instance that decorates this Application's Method</summary>
+		/// <remarks>
+		/// It doesn't happen much in practice, but this *can* be null because you can create an Application using 
+		/// a regular old MethodInfo, it doesn't *have* to be decorated with [Application]
+		/// </remarks>
 		public virtual ApplicationAttribute ApplicationAttribute {
 			get {
 				if (_attribute == null) _attribute = GetCustomAttribute<ApplicationAttribute>(Method);
@@ -38,6 +55,11 @@ namespace ConsoleRack {
 		public virtual T GetCustomAttribute<T>(MethodInfo method) where T : Attribute {
 			var attributes = Method.GetCustomAttributes(typeof(T), true);
 			return (attributes.Length > 0) ? attributes[0] as T : null;
+		}
+
+		/// <summary>Invoke an Application manually, just passing along string[] args</summary>
+		public virtual Response Invoke(string[] args) {
+			return Invoke(new Request(args));
 		}
 
 		public virtual Response Invoke(Request request) {
