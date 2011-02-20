@@ -7,6 +7,14 @@ using System.Collections.Generic;
 
 using ConsoleRack;
 
+// TODO
+//
+//	We have Sort() which we need to implement
+//
+//	We also need to implement a different method which takes a List<Middleware> and 
+//	gives us back a single middleware (with all of the other middleware's inner Applications set properly)  <----  TODO
+//
+
 /// <summary>Primary namespace for Console Rack (Crack)</summary>
 namespace ConsoleRack {
 	
@@ -201,7 +209,7 @@ namespace ConsoleRack {
 
 		/// <summary>Returns all of the Middleware for the given assemblies (sorted properly!)</summary>
 		public static List<Middleware> From(params Assembly[] assemblies) {
-			return Sort(AllFromAssemblies(assemblies));
+			return SetInnerApplications(Sort(AllFromAssemblies(assemblies)));
 		}
 
 		/// <summary>Returns a new List of Middleware sorted based on any sorting rules specified in the [Middleware] attribute</summary>
@@ -211,6 +219,21 @@ namespace ConsoleRack {
 		/// </remarks>
 		public static List<Middleware> Sort(List<Middleware> middleware) {
 			return middleware; // TODO actually sort ...
+		}
+
+		/// <summary>Given a list of middleware, this goes through and sets all of their Application properties</summary>
+		/// <remarks>
+		/// Once you get this list back, you should Invoke the *first* middleware, if any.
+		///
+		/// You should also set the Application of the last Middleware (which will be null) 
+		/// to the actual application that you want to run.
+		///
+		/// NOTE: This works with the List that its given and modifies it.
+		/// </remarks>
+		public static List<Middleware> SetInnerApplications(List<Middleware> middleware) {
+			for (var i = 0; i < middleware.Count - 1; i++)
+				middleware[i].Application = middleware[i + 1];
+			return middleware;
 		}
 
 		/// <summary>Returns all of the Middleware found in the given assemblies (see <c>AllFromAssembly</c></summary>
@@ -241,22 +264,27 @@ namespace MyApp {
 		public static void Main(string[] args) {
 			Crack.Run(args);
 		}
-	}
-
-	public class SomeMiddleware {
-
-	}
-
-	public class MyApp {
 
 		[Middleware]
-		public static Response Invoke(Request request, Application app) {
+		public static Response Middleware0(Request request, Application app) {
+			Console.WriteLine("Hello from middleware - FIRST!");
+			return app.Invoke(request);
+		}
+
+		[Middleware]
+		public static Response Middleware1(Request request, Application app) {
 			Console.WriteLine("Hello from middleware");
 			return app.Invoke(request);
 		}
 
+		[Middleware]
+		public static Response Middleware2(Request request, Application app) {
+			Console.WriteLine("Hello from a different middleware");
+			return app.Invoke(request);
+		}
+
 		[Application]
-		public static Response Invoke(Request request) {
+		public static Response InvokeMyApp(Request request) {
 			Console.WriteLine("Hello from application");
 			return new Response("This is my STDOUT text");
 		}
