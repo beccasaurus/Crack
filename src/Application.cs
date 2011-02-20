@@ -12,6 +12,7 @@ namespace ConsoleRack {
 		public InvalidApplicationException(string message) : base(message) {}
 	}
 
+	/// <summary>The [Application] attribute for your application methods</summary>
 	public class ApplicationAttribute : Attribute {
 		public ApplicationAttribute(){}
 		public ApplicationAttribute(string description) : this() {
@@ -23,6 +24,13 @@ namespace ConsoleRack {
 
 		public virtual string Name        { get; set; }
 		public virtual string Description { get; set; }
+	}
+
+	/// <summary>Custom List of Application that lets you easily get an Application by name</summary>
+	public class ApplicationList : List<Application>, IList<Application>, IEnumerable<Application> {
+		public virtual Application this[string name] {
+			get { return this.FirstOrDefault(app => app.Name == name); }
+		}
 	}
 
 	/// <summary>Represents a console Application.</summary>
@@ -46,6 +54,11 @@ namespace ConsoleRack {
 
 		/// <summary>The actual MethodInfo implementation that was decorated with [Application]</summary>
 		public virtual MethodInfo Method { get; set; }
+
+		/// <summary>Returns the full name of the Method, eg. "Namespace.MyClass.MyMethod"</summary>
+		public virtual string MethodFullName {
+			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
+		}
 
 		/// <summary>This Application's name.  Defaults to the full name of the method by may be overriden.</summary>
 		public virtual string Name {
@@ -122,10 +135,6 @@ namespace ConsoleRack {
 		}
 
 		#region Private
-		string MethodFullName {
-			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
-		}
-
 		string NameFromAttribute {
 			get { return (ApplicationAttribute == null) ? null : ApplicationAttribute.Name; }
 		}

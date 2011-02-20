@@ -7,7 +7,23 @@ using System.Collections.Generic;
 
 namespace ConsoleRack {
 
-	public class MiddlewareAttribute : Attribute {
+	/// <summary>Exception that gets raised if the MethodInfo used to instantiate an Middleware isn't valid (eg. wrong return type)</summary>
+	public class InvalidMiddlewareException : Exception  {
+		public InvalidMiddlewareException(string message) : base(message) {}
+	}
+
+	/// <summary>The [Application] attribute for your application methods</summary>
+	public class MiddlewareAttribute : ApplicationAttribute {
+		public MiddlewareAttribute() : base(){}
+		public MiddlewareAttribute(string description) : base(description) {}
+		public MiddlewareAttribute(string name, string description) : base(name, description) {}
+	}
+
+	/// <summary>Custom List of Middleware that lets you easily get an Middleware by name</summary>
+	public class MiddlewareList : List<Middleware>, IList<Middleware>, IEnumerable<Middleware> {
+		public virtual Middleware this[string name] {
+			get { return this.FirstOrDefault(mw => mw.Name == name); }
+		}
 	}
 
 	/// <summary>Represents a Middleware(or Application).</summary>
@@ -33,6 +49,32 @@ namespace ConsoleRack {
 
 		public override Response Invoke(Request request) {
 			return Method.Invoke(null, new object[]{ request, Application }) as Response;
+		}
+
+		/// <summary>Raises an InvalidMiddlewareException if this method doesn't look valid, so we won't be able to Invoke it properly.</summary>
+		public override void ValidateMethod(MethodInfo method) {
+			var errors = new List<string>();
+
+			if (! method.IsStatic)
+				errors.Add("Must be static");
+
+			if (! typeof(Response).IsAssignableFrom(method.ReturnType))
+				errors.Add("Must return a Response");
+
+			var parameters = method.GetParameters();
+			if (parameters.Length != 2)
+				errors.Add("Must take 2 parameters (Request, Application)");
+			else {
+				if (! parameters.First().ParameterType.IsAssignableFrom(typeof(Request)))
+					errors.Add("Parameter 1 must be a Request");
+				if (! parameters.Last().ParameterType.IsAssignableFrom(typeof(Application)))
+					errors.Add("Parameter 2 must be an Application");
+			}
+
+			if (errors.Count > 0) {
+				errors.Insert(0, "This method cannot be used as a Middleware");
+				throw new InvalidMiddlewareException(string.Join(". ", errors.ToArray()) + ".");
+			}
 		}
 
 		/// <summary>Returns all of the Middleware for the given assemblies (sorted properly!)</summary>

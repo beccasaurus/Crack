@@ -119,8 +119,16 @@ namespace ConsoleRack.Specs {
 			new Application(Method("WithAttribute4")).Description.ShouldEqual("my description");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void can_get_Application_by_name_from_a_ApplicationList() {
+			var list = new ApplicationList();
+			list.Add(new Application(Method("Foo")));
+			list.Add(new Application(Method("ObjectParam")));
+			list.Add(new Application(Method("WithAttribute2")));
+
+			list["Does not exist"].Should(Be.Null);
+			list["CustomName"].MethodFullName.ShouldEqual("ConsoleRack.Specs.ApplicationSpec.WithAttribute2");
+			list["ConsoleRack.Specs.ApplicationSpec.Foo"].Invoke("hello", "foo").Text.ShouldEqual("You requested: hello, foo\n");
 		}
 
 		[Test][Ignore]
