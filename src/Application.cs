@@ -13,6 +13,16 @@ namespace ConsoleRack {
 	}
 
 	public class ApplicationAttribute : Attribute {
+		public ApplicationAttribute(){}
+		public ApplicationAttribute(string description) : this() {
+			Description = description;
+		}
+		public ApplicationAttribute(string name, string description) : this(description) {
+			Name = name;
+		}
+
+		public virtual string Name        { get; set; }
+		public virtual string Description { get; set; }
 	}
 
 	/// <summary>Represents a console Application.</summary>
@@ -22,28 +32,32 @@ namespace ConsoleRack {
 	/// </remarks>
 	public class Application {
 
+		/// <summary>Application constructor.  Making an application requires a MethodInfo.</summary>
 		public Application(MethodInfo method) {
+			if (method == null)
+				throw new ArgumentException("Method cannot be null");
+
 			ValidateMethod(method);
 			Method = method;
 		}
 
 		ApplicationAttribute _attribute;
-		string _name;
+		string _name, _description;
 
 		/// <summary>The actual MethodInfo implementation that was decorated with [Application]</summary>
 		public virtual MethodInfo Method { get; set; }
 
 		/// <summary>This Application's name.  Defaults to the full name of the method by may be overriden.</summary>
 		public virtual string Name {
-			get { return _name ?? MethodFullName; }
-			set { _name = value;                  }
+			get { return _name ?? NameFromAttribute ?? MethodFullName; }
+			set { _name = value; }
 		}
 
-		public virtual string MethodFullName {
-			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
+		/// <summary>A description of this Application.  Useful if you have lots of applications you want to list/query.</summary>
+		public virtual string Description {
+			get { return _description ?? DescriptionFromAttribute; }
+			set { _description = value; }
 		}
-
-		public virtual string Description { get; set; }
 
 		/// <summary>Gets the actual ApplicationAttribute instance that decorates this Application's Method</summary>
 		/// <remarks>
@@ -69,7 +83,6 @@ namespace ConsoleRack {
 		}
 
 		public virtual Response Invoke(Request request) {
-			Console.WriteLine("Application.Invoke({0})", request);
 			return Method.Invoke(null, new object[]{ request }) as Response;
 		}
 
@@ -107,5 +120,19 @@ namespace ConsoleRack {
 		public static List<Application> AllFromAssembly(Assembly assembly) {
 			return Crack.GetMethodInfos<ApplicationAttribute>(assembly).Select(method => new Application(method)).ToList();
 		}
+
+		#region Private
+		string MethodFullName {
+			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
+		}
+
+		string NameFromAttribute {
+			get { return (ApplicationAttribute == null) ? null : ApplicationAttribute.Name; }
+		}
+
+		string DescriptionFromAttribute {
+			get { return (ApplicationAttribute == null) ? null : ApplicationAttribute.Description; }
+		}
+		#endregion
 	}
 }

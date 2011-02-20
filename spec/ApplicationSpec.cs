@@ -63,24 +63,76 @@ namespace ConsoleRack.Specs {
 			app.Invoke("hello", "object").Text.ShouldEqual("You passed args: hello, object\n");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Name_defaults_to_full_method_name() {
+			new Application(Method("Foo")).Name.ShouldEqual("ConsoleRack.Specs.ApplicationSpec.Foo");
+			new Application(Method("ObjectParam")).Name.ShouldEqual("ConsoleRack.Specs.ApplicationSpec.ObjectParam");
 		}
 
-		[Test][Ignore]
+		[Test]
 		public void Description_defaults_to_null() {
+			new Application(Method("Foo")).Description.Should(Be.Null);
+			new Application(Method("ObjectParam")).Description.Should(Be.Null);
 		}
 
-		[Test][Ignore]
-		public void Name_can_be_set() {
+		[Test]
+		public void Name_can_be_set_manually() {
+			var app = new Application(Method("Foo"));
+			app.Name.ShouldEqual("ConsoleRack.Specs.ApplicationSpec.Foo");
+			app.Name = "Overriden";
+			app.Name.ShouldEqual("Overriden");
 		}
 
-		[Test][Ignore]
-		public void Description_can_be_set() {
+		[Test]
+		public void Description_can_be_set_manually() {
+			var app = new Application(Method("Foo"));
+			app.Description.Should(Be.Null);
+			app.Description = "Overriden";
+			app.Description.ShouldEqual("Overriden");
+		}
+
+		[Application("my description")]
+		public static Response WithAttribute1(Request req){ return new Response(); }
+
+		[Application("CustomName", "my description")]
+		public static Response WithAttribute2(Request req){ return new Response(); }
+
+		[Application(Name = "CustomName")]
+		public static Response WithAttribute3(Request req){ return new Response(); }
+
+		[Application(Name = "CustomName", Description = "my description")]
+		public static Response WithAttribute4(Request req){ return new Response(); }
+
+		[Test]
+		public void Name_can_be_set_via_attribute() {
+			new Application(Method("WithAttribute1")).Name.ShouldEqual("ConsoleRack.Specs.ApplicationSpec.WithAttribute1");
+			new Application(Method("WithAttribute2")).Name.ShouldEqual("CustomName");
+			new Application(Method("WithAttribute3")).Name.ShouldEqual("CustomName");
+			new Application(Method("WithAttribute4")).Name.ShouldEqual("CustomName");
+		}
+
+		[Test]
+		public void Description_can_be_set_via_attribute() {
+			new Application(Method("WithAttribute1")).Description.ShouldEqual("my description");
+			new Application(Method("WithAttribute2")).Description.ShouldEqual("my description");
+			new Application(Method("WithAttribute3")).Description.Should(Be.Null);
+			new Application(Method("WithAttribute4")).Description.ShouldEqual("my description");
 		}
 
 		[Test][Ignore]
 		public void can_get_Application_by_name_from_a_ApplicationList() {
+		}
+
+		[Test][Ignore]
+		public void can_by_run_without_middleware() {
+		}
+
+		[Test][Ignore]
+		public void can_by_run_given_a_list_of_middleware() {
+		}
+
+		[Test][Ignore]
+		public void can_get_all_Application_in_a_given_assembly() {
 		}
 	}
 }

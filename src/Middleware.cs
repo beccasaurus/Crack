@@ -32,7 +32,6 @@ namespace ConsoleRack {
 		}
 
 		public override Response Invoke(Request request) {
-			Console.WriteLine("Middleware.Invoke({0})", request);
 			return Method.Invoke(null, new object[]{ request, Application }) as Response;
 		}
 
