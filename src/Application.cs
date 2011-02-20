@@ -95,8 +95,25 @@ namespace ConsoleRack {
 			return Invoke(new Request(args));
 		}
 
+		/// <summary>Invoke an Application with the given request</summary>
 		public virtual Response Invoke(Request request) {
 			return Method.Invoke(null, new object[]{ request }) as Response;
+		}
+
+		/// <summary>Invoke this application given the provided list of middleware</summary>
+		public virtual Response Invoke(Request request, params Middleware[] middlewares) {
+			return Invoke(request, new MiddlewareList(middlewares));
+		}
+
+		/// <summary>Invoke this application given the provided MiddlewareList of middlewares</summary>
+		/// <remarks>
+		/// This runs through all of the provided middleware.  We use the MiddlewareList to give 
+		/// us middleware that are ordered properly, etc.
+		///
+		/// This really just invokes MiddlewareList.Invoke(Request, Application)
+		/// </remarks>
+		public virtual Response Invoke(Request request, MiddlewareList middlewares) {
+			return middlewares.Invoke(request, this);
 		}
 
 		/// <summary>Raises an InvalidApplicationException if this method doesn't look valid, so we won't be able to Invoke it properly.</summary>

@@ -21,8 +21,29 @@ namespace ConsoleRack {
 
 	/// <summary>Custom List of Middleware that lets you easily get an Middleware by name</summary>
 	public class MiddlewareList : List<Middleware>, IList<Middleware>, IEnumerable<Middleware> {
+		public MiddlewareList() : base(){}
+		public MiddlewareList(IEnumerable<Middleware> middlewares) : base(middlewares){}
+
 		public virtual Middleware this[string name] {
 			get { return this.FirstOrDefault(mw => mw.Name == name); }
+		}
+
+		/// <summary>Given this Request and Application, we sort all of our middleware in order and invoke the first one!</summary>
+		public virtual Response Invoke(Request request, Application app) {
+			if (Count == 0)
+				return app.Invoke(request);
+
+			// Put all of our middleware in the right order
+			Middleware.Sort(this);
+
+			// Set the Application property on all middlewares, given the order that they're currently in
+			Middleware.SetInnerApplications(this);
+
+			this.Last().Application = app;
+			return this.First().Invoke(request);
+		}
+
+		void OrderMiddlewares() {
 		}
 	}
 

@@ -131,8 +131,25 @@ namespace ConsoleRack.Specs {
 			list["ConsoleRack.Specs.ApplicationSpec.Foo"].Invoke("hello", "foo").Text.ShouldEqual("You requested: hello, foo\n");
 		}
 
-		[Test][Ignore]
-		public void can_by_run_without_middleware() {
+		[Middleware]
+		public static Response WriteBeforeAndAfter(Request request, Application app) {
+			var response = app.Invoke(request);
+			response.Text = string.Format("BEFORE\n{0}\nAFTER", response.Text);
+			return response;
+		}
+
+		[Test]
+		public void can_by_run_given_1_middleware() {
+			var response = new Application(Method("Foo")).Invoke(new Request("hello"), new Middleware(Method("WriteBeforeAndAfter")));
+			response.Text.ShouldEqual("BEFORE\nYou requested: hello\n\nAFTER");
+		}
+
+		[Test]
+		public void can_by_run_given_2_middleware() {
+			var middleware1 = new Middleware(Method("WriteBeforeAndAfter"));
+			var middleware2 = new Middleware(Method("WriteBeforeAndAfter"));
+			var response    = new Application(Method("Foo")).Invoke(new Request("hello"), middleware1, middleware2);
+			response.Text.ShouldEqual("BEFORE\nBEFORE\nYou requested: hello\n\nAFTER\nAFTER");
 		}
 
 		[Test][Ignore]

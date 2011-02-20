@@ -42,13 +42,22 @@ namespace ConsoleRack {
 		public virtual TextWriter Error { get { return STDERR; } }
 
 		/// <summary>Returns all of the text that has been written to STDOUT</summary>
-		public virtual string OutputText { get { return _stdout_builder.ToString(); } }
+		public virtual string OutputText {
+			get { return _stdout_builder.ToString(); }
+			set { _stdout_builder = new StringBuilder(value); }
+		}
 
 		/// <summary>Returns all of the text that has been written to STDERR</summary>
-		public virtual string ErrorText { get { return _stderr_builder.ToString(); } }
+		public virtual string ErrorText {
+			get { return _stderr_builder.ToString(); }
+			set { _stderr_builder = new StringBuilder(value); }
+		}
 
 		/// <summary>Shortcut to OutputText</summary>
-		public virtual string Text { get { return _stdout_builder.ToString(); } }
+		public virtual string Text {
+			get { return OutputText;  }
+			set { OutputText = value; }
+		}
 
 		/// <summary>Actually executes this Response, writing to Console.Out, Console.Error, and exiting the process using the ExitCode</summary>
 		public virtual int Execute() {

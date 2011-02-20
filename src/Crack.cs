@@ -54,6 +54,8 @@ namespace ConsoleRack {
 			Crack.Middlewares.Last().Application = app;
 
 			Crack.Middlewares.First().Invoke(new Request(args)).Execute();
+
+			// TODO this should use Application.Invoke(req, middlewares) now ...
 		}
 
 		/// <summary>Returns a list of all public, static MethodInfo found in the given assembly that have the given attribute type</summary>
