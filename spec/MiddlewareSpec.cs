@@ -135,8 +135,30 @@ namespace ConsoleRack.Specs {
 			list["ConsoleRack.Specs.MiddlewareSpec.Foo"].Invoke("hello", "foo").Text.ShouldEqual("You requested: hello, foo\n");
 		}
 
+		[Middleware(Name = "Bar")]
+		public static Response Bar(Request req, Application app) {
+			//return app.Invoke(req).Prepend("Bar");
+			return null;
+		}
+
+		[Middleware(Name = "Awesome")]
+		public static Response Awesome(Request req, Application app) {
+			return null;
+		}
+
+		[Middleware(Name = "GoesBeforeAwesome", Before = "")]
+		public static Response GoesBeforeAwesome(Request req, Application app) {
+			return null;
+		}
+
+		[Middleware(Name= "GoesAfterBar", After = "Bar")]
+		public static Response GoesAfterBar(Request req, Application app) {
+			return null;
+		}
+
 		[Test][Ignore]
 		public void can_specify_the_name_of_a_Middleware_that_this_should_be_put_Before() {
+			
 		}
 
 		[Test][Ignore]

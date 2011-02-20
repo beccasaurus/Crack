@@ -17,6 +17,9 @@ namespace ConsoleRack {
 		public MiddlewareAttribute() : base(){}
 		public MiddlewareAttribute(string description) : base(description) {}
 		public MiddlewareAttribute(string name, string description) : base(name, description) {}
+
+		public virtual string Before { get; set; }
+		public virtual string After  { get; set; }
 	}
 
 	/// <summary>Custom List of Middleware that lets you easily get an Middleware by name</summary>
