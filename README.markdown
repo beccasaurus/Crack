@@ -126,6 +126,39 @@ application.  You can also return directly from the middleware, eg.
 Using that middleware with out application, calling `MyApp.exe --version` would return automatically, 
 displaying the version number.  You main application code would never even be called!
 
+#### Ordering
+
+Most of the time, it doesn't matter what order your middleware runs in.  Sometimes, however, you need to make 
+sure that your middleware runs before or after something.
+
+    [Middleware(Last = true)]
+    public static Response ThisWillRunLast(...
+
+    [Middleware(First = true)]
+    public static Response ThisWillRunFirst(...
+
+You can use `First` and `Last` and, when we order the middleware before running your application, we put all 
+of the `First` middleware at the "top" of the stack of middleware, and of of the `Last` on the bottom (right 
+before invoking the actual application).
+
+You can also specify that your middleware should run `Before` or `After` another middleware:
+
+    // If you don't give your middleware a name, the name defaults to the full name of the method, eg. MyNamespace.MyClass.Foo
+    [Middleware(Name = "Foo")]
+    public static Response Foo(...
+
+    [Middleware(Before = "Foo")]
+    public static Response ThisWillRunBeforeFoo(...
+
+    [Middleware(After = "Foo")]
+    public static Response ThisWillRunAfterFoo(...
+
+Just like with `First` and `Last`, when we order the middleware before running your application, we put all 
+of the `Before` middleware before the specified middleware, and of of the `After` after the specified middleware.
+
+**NOTE** If no middleware is found with the name specified in `Before` or `After`, the middleware is NOT RUN.
+before invoking the actual application).
+
 ## Is this shit really useful?
 
 To me: YES.
