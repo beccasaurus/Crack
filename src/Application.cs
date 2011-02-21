@@ -7,35 +7,6 @@ using System.Collections.Generic;
 
 namespace ConsoleRack {
 
-	/// <summary>Exception that gets raised if the MethodInfo used to instantiate an Application isn't valid (eg. wrong return type)</summary>
-	public class InvalidApplicationException : Exception  {
-		public InvalidApplicationException(string message) : base(message) {}
-	}
-
-	/// <summary>The [Application] attribute for your application methods</summary>
-	public class ApplicationAttribute : Attribute {
-		public ApplicationAttribute(){}
-		public ApplicationAttribute(string description) : this() {
-			Description = description;
-		}
-		public ApplicationAttribute(string name, string description) : this(description) {
-			Name = name;
-		}
-
-		public virtual string Name        { get; set; }
-		public virtual string Description { get; set; }
-	}
-
-	/// <summary>Custom List of Application that lets you easily get an Application by name</summary>
-	public class ApplicationList : List<Application>, IList<Application>, IEnumerable<Application> {
-		public ApplicationList() : base(){}
-		public ApplicationList(IEnumerable<Application> apps) : base(apps){}
-
-		public virtual Application this[string name] {
-			get { return this.FirstOrDefault(app => app.Name == name); }
-		}
-	}
-
 	/// <summary>Represents a console Application.</summary>
 	/// <remarks>
 	/// This is just like a Middleware (infact a Middleware *is* an Application) 
