@@ -172,11 +172,6 @@ Crack also makes it *really* easy to test your CLI applications because you don'
 actual .exe executable.  You can manually invoke your application and inspect the Response you get back, without 
 executing any external processes.
 
-License
--------
-
-Crack is released under the MIT license.
-
 Example
 -------
 
@@ -209,5 +204,10 @@ Example
         return app.Invoke(req).Prepend(header).Append(footer);
       }
     }
+
+License
+-------
+
+Crack is released under the MIT license.
 
 [rack]: http://rack.rubyforge.org/
