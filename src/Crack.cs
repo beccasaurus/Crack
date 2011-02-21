@@ -47,18 +47,10 @@ namespace ConsoleRack {
 		/// If Crack.Middleware has not been set, we look for all [Middleware] in the calling assembly.
 		/// </remarks>
 		public static void Run(Application app, string[] args) {
-			if (Crack.Middlewares.Count == 0)
-				throw new Exception("There are no middleware to invoke ... this will invoke the app ... once we implement that");
-
-			// set the application (on the bottom of the stack, to be invoked by the final middleware)
-			Crack.Middlewares.Last().Application = app;
-
-			Crack.Middlewares.First().Invoke(new Request(args)).Execute();
-
-			// TODO this should use Application.Invoke(req, middlewares) now ...
+			app.Invoke(new Request(args), Crack.Middlewares);
 		}
 
-		/// <summary>Returns a list of all public, static MethodInfo found in the given assembly that have the given attribute type</summary>
+		/// <summary>Returns a list of all public static MethodInfo found in the given assembly that have the given attribute type</summary>
 		public static List<MethodInfo> GetMethodInfos<T>(Assembly assembly) {
 			var methods  = new List<MethodInfo>();
 			var attrType = typeof(T);

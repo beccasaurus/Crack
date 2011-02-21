@@ -14,12 +14,17 @@ namespace ConsoleRack {
 
 	/// <summary>The [Application] attribute for your application methods</summary>
 	public class MiddlewareAttribute : ApplicationAttribute {
-		public MiddlewareAttribute() : base(){}
+		public MiddlewareAttribute() : base(){
+			First = false;
+			Last  = false;
+		}
 		public MiddlewareAttribute(string description) : base(description) {}
 		public MiddlewareAttribute(string name, string description) : base(name, description) {}
 
 		public virtual string Before { get; set; }
 		public virtual string After  { get; set; }
+		public virtual bool First    { get; set; }
+		public virtual bool Last     { get; set; }
 	}
 
 	/// <summary>Custom List of Middleware that lets you easily get an Middleware by name</summary>
@@ -29,6 +34,34 @@ namespace ConsoleRack {
 
 		public virtual Middleware this[string name] {
 			get { return this.FirstOrDefault(mw => mw.Name == name); }
+		}
+
+		public virtual void MoveToTop(Middleware middleware) {
+			Remove(middleware);
+			Insert(0, middleware);
+		}
+
+		public virtual void MoveToBottom(Middleware middleware) {
+			Remove(middleware);
+			Insert(Count, middleware);
+		}
+
+		public virtual void MoveToBefore(Middleware middleware, string beforeName) {
+			Remove(middleware);
+
+			var other = this[beforeName];
+			if (other == null) return;
+
+			Insert(IndexOf(other), middleware);
+		}
+
+		public virtual void MoveToAfter(Middleware middleware, string afterName) {
+			Remove(middleware);
+
+			var other = this[afterName];
+			if (other == null) return;
+
+			Insert(IndexOf(other) + 1, middleware);
 		}
 
 		/// <summary>Given this Request and Application, we sort all of our middleware in order and invoke the first one!</summary>
@@ -43,6 +76,7 @@ namespace ConsoleRack {
 			Middleware.SetInnerApplications(this);
 
 			this.Last().Application = app;
+			
 			return this.First().Invoke(request);
 		}
 
@@ -59,6 +93,8 @@ namespace ConsoleRack {
 		public Middleware(MethodInfo method) : base(method) {}
 
 		MiddlewareAttribute _attribute;
+		string _before, _after;
+		bool? _first, _last;
 
 		/// <summary>This Middleware's inner application that it gets called with and can Invoke()</summary>
 		public virtual Application Application { get; set; }
@@ -69,6 +105,26 @@ namespace ConsoleRack {
 				if (_attribute == null) _attribute = GetCustomAttribute<MiddlewareAttribute>(Method);
 				return _attribute;
 			}
+		}
+
+		public virtual string Before {
+			get { return _before ?? ((MiddlewareAttribute != null) ? MiddlewareAttribute.Before : null); }
+			set { _before = value; }
+		}
+
+		public virtual string After {
+			get { return _after ?? ((MiddlewareAttribute != null) ? MiddlewareAttribute.After : null); }
+			set { _after = value; }
+		}
+
+		public virtual bool First {
+			get { return (bool) (_first ?? ((MiddlewareAttribute != null) ? MiddlewareAttribute.First : false)); }
+			set { _first = value; }
+		}
+
+		public virtual bool Last {
+			get { return (bool) (_last ?? ((MiddlewareAttribute != null) ? MiddlewareAttribute.Last : false)); }
+			set { _last = value; }
 		}
 
 		public override Response Invoke(Request request) {
@@ -102,7 +158,7 @@ namespace ConsoleRack {
 		}
 
 		/// <summary>Returns all of the Middleware for the given assemblies (sorted properly!)</summary>
-		public static List<Middleware> From(params Assembly[] assemblies) {
+		public static MiddlewareList From(params Assembly[] assemblies) {
 			return SetInnerApplications(Sort(AllFromAssemblies(assemblies)));
 		}
 
@@ -111,8 +167,27 @@ namespace ConsoleRack {
 		/// If you specify a Before or After on your [Middleware] and we can't find the middleware you specified, 
 		/// we DO NOT include your Middleware in the stack.  This method will REMOVE it!  You've been warned.
 		/// </remarks>
-		public static List<Middleware> Sort(List<Middleware> middleware) {
-			return middleware; // TODO actually sort ...
+		public static MiddlewareList Sort(MiddlewareList middlewares) {
+			var copy = middlewares.ToArray();
+			
+			// Process Middleware marked with First or Last
+			foreach (var mw in copy)
+				if (mw.First)
+					middlewares.MoveToTop(mw);
+				else if (mw.Last)
+					middlewares.MoveToBottom(mw);
+
+			// Process Middleware marked with Before or After
+			foreach (var mw in copy) {
+				if (mw.First || mw.Last) continue; // you can't be First|Last and use Before|After
+
+				if (! string.IsNullOrEmpty(mw.Before))
+					middlewares.MoveToBefore(mw, mw.Before);
+				else if (! string.IsNullOrEmpty(mw.After))
+					middlewares.MoveToAfter(mw, mw.After);
+			}
+
+			return middlewares;
 		}
 
 		/// <summary>Given a list of middleware, this goes through and sets all of their Application properties</summary>
@@ -124,23 +199,29 @@ namespace ConsoleRack {
 		///
 		/// NOTE: This works with the List that its given and modifies it.
 		/// </remarks>
-		public static List<Middleware> SetInnerApplications(List<Middleware> middleware) {
+		public static MiddlewareList SetInnerApplications(MiddlewareList middleware) {
 			for (var i = 0; i < middleware.Count - 1; i++)
 				middleware[i].Application = middleware[i + 1];
 			return middleware;
 		}
 
 		/// <summary>Returns all of the Middleware found in the given assemblies (see <c>AllFromAssembly</c></summary>
-		public static new List<Middleware> AllFromAssemblies(params Assembly[] assemblies) {
-			var middlewares = new List<Middleware>();
+		public static new MiddlewareList AllFromAssemblies(params Assembly[] assemblies) {
+			var middlewares = new MiddlewareList();
 			foreach (var assembly in assemblies)
 				middlewares.AddRange(AllFromAssembly(assembly));
 			return middlewares;
 		}
 
 		/// <summary>Returns all of the Middleware found in the given Assembly (my looking for public static methods decorated with [Middleware]</summary>
-		public static new List<Middleware> AllFromAssembly(Assembly assembly) {
-			return Crack.GetMethodInfos<MiddlewareAttribute>(assembly).Select(method => new Middleware(method)).ToList();
+		public static new MiddlewareList AllFromAssembly(Assembly assembly) {
+			var middlewares = Crack.GetMethodInfos<MiddlewareAttribute>(assembly).Select(method => new Middleware(method)).ToList();
+			return new MiddlewareList(middlewares);
+		}
+
+		/// <summary>Shortcut to get all Middleware from the calling assembly.</summary>
+		public static new MiddlewareList AllFromAssembly() {
+			return AllFromAssembly(Assembly.GetCallingAssembly());
 		}
 	}
 }

@@ -71,9 +71,26 @@ namespace ConsoleRack {
 		}
 
 		#region Helper methods for modifying the STDOUT and STDERR ... these should be Fluent
+		public virtual Response Append(string str, params object[] objects)  { return AppendToOutput(str, objects); }
+		public virtual Response Prepend(string str, params object[] objects) { return PrependToOutput(str, objects); }
 
-		// ...
+		public virtual Response AppendToOutput(string str, params object[] objects) {
+			STDOUT.Append(string.Format(str, objects));
+			return this;
+		}
+		public virtual Response PrependToOutput(string str, params object[] objects) {
+			STDOUT.Insert(0, string.Format(str, objects));
+			return this;
+		}
 
+		public virtual Response AppendToError(string str, params object[] objects) {
+			STDERR.Append(string.Format(str, objects));
+			return this;
+		}
+		public virtual Response PrependToError(string str, params object[] objects) {
+			STDERR.Insert(0, string.Format(str, objects));
+			return this;
+		}
 		#endregion
 	}
 }

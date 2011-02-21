@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -135,30 +136,55 @@ namespace ConsoleRack.Specs {
 			list["ConsoleRack.Specs.MiddlewareSpec.Foo"].Invoke("hello", "foo").Text.ShouldEqual("You requested: hello, foo\n");
 		}
 
-		[Middleware(Name = "Bar")]
-		public static Response Bar(Request req, Application app) {
-			//return app.Invoke(req).Prepend("Bar");
-			return null;
+		public class MyMiddleware {
+
+			[Middleware(Name = "Bar")]
+			public static Response Bar(Request req, Application app) {
+				return app.Invoke(req).Prepend("Bar:");
+			}
+
+			[Middleware(Name = "GoLast", Last = true)]
+			public static Response GoLast(Request req, Application app) {
+				return app.Invoke(req).Prepend("GoLast:");
+			}
+
+			[Middleware(Name = "Awesome")]
+			public static Response Awesome(Request req, Application app) {
+				return app.Invoke(req).Prepend("Awesome:");
+			}
+
+			[Middleware(Name = "GoesBeforeAwesome", Before = "Awesome")]
+			public static Response GoesBeforeAwesome(Request req, Application app) {
+				return app.Invoke(req).Prepend("GoesBeforeAwesome:");
+			}
+
+			[Middleware(Name = "GoesAfterBar", After = "Bar")]
+			public static Response GoesAfterBar(Request req, Application app) {
+				return app.Invoke(req).Prepend("GoesAfterBar:");
+			}
+
+			[Middleware(Name = "GoFirst", First = true)]
+			public static Response GoFirst(Request req, Application app) {
+				return app.Invoke(req).Prepend("GoFirst:");
+			}
 		}
 
-		[Middleware(Name = "Awesome")]
-		public static Response Awesome(Request req, Application app) {
-			return null;
+		[Application]
+		public static Response MyApp(Request req) {
+			return new Response("Called MyApp with: {0}", string.Join(", ", req.Arguments));
 		}
 
-		[Middleware(Name = "GoesBeforeAwesome", Before = "")]
-		public static Response GoesBeforeAwesome(Request req, Application app) {
-			return null;
-		}
-
-		[Middleware(Name= "GoesAfterBar", After = "Bar")]
-		public static Response GoesAfterBar(Request req, Application app) {
-			return null;
+		[Test]
+		public void can_invoke_Application_with_many_middleware_and_they_run_in_the_right_order() {
+			var ourMiddleware = Middleware.AllFromAssembly().Where(mw => mw.MethodFullName.Contains("MyMiddleware")).ToArray();
+			var app           = new Application(Method("MyApp"));
+			var response      = app.Invoke(new Request("hi", "there"), ourMiddleware);
+			
+			response.Text.ShouldEqual("GoFirst:Bar:GoesAfterBar:GoesBeforeAwesome:Awesome:GoLast:Called MyApp with: hi, there\n");
 		}
 
 		[Test][Ignore]
 		public void can_specify_the_name_of_a_Middleware_that_this_should_be_put_Before() {
-			
 		}
 
 		[Test][Ignore]
@@ -171,6 +197,10 @@ namespace ConsoleRack.Specs {
 
 		[Test][Ignore]
 		public void can_specify_that_Middleware_should_be_run_Last() {
+		}
+
+		[Test][Ignore]
+		public void middleware_can_return_directly_without_invoking_their_inner_Application() {
 		}
 	}
 }

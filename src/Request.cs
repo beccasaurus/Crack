@@ -18,7 +18,8 @@ namespace ConsoleRack {
 	public class Request {
 
 		public Request() {
-			Data = new Dictionary<string, object>();
+			Arguments = new string[] {};
+			Data      = new Dictionary<string, object>();
 		}
 
 		public Request(params string[] arguments) : this() {
