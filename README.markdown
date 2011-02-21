@@ -205,6 +205,30 @@ Example
         }
     }
 
+Low-Level
+---------
+
+If you wanna get down and dirty with Crack, check out the specs.  I need to add more specs, but it should get you started!
+
+Both `Application` and `Middleware` can easily be instantiated with nothing more than a `MethodInfo`.  No attributes are 
+required to use Crack at *all*.
+
+    // if we detect that the MethodInfo passed to us isn't a valid "Application", we throw a useful exceptin explaining why.
+    var app = new Application(typeof(SomeClass).GetMethod("TheApplicationMethod"));
+
+    // you can invoke the app directly, without any middleware
+    var response = app.Invoke("argument1", "argument2");
+
+    // you can manually pass in the middleware that you want to use
+    var middleware1 = new Middleware(typeof(SomeClass).GetMethod("MyMiddleware1"));
+    var middleware2 = new Middleware(typeof(SomeClass).GetMethod("MyMiddleware2"));
+
+    // when you pass in middleware, you have to pass in a Request() explicitly ... because you can't use 'params' twice  :)
+    response = app.Invoke(new Request("arg1", "arg2"), middleware1);
+    response = app.Invoke(new Request("arg1", "arg2"), middleware1, middleware2, ...);
+
+    // Note: when you pass in middleware, we automatically order them using First/Last/Before/After ... you don't need to do that yourself.
+
 License
 -------
 
