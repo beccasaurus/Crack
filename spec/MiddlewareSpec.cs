@@ -39,27 +39,27 @@ namespace ConsoleRack.Specs {
 		public void raises_Exception_if_MethodInfo_doesnt_have_correct_parameters_and_whatnot() {
 			Middleware mw;
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Must be static.", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Must be static.", () => {
 				mw = new Middleware(Method("InstanceMethod"));
 			});
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Must return a Response.", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Must return a Response.", () => {
 				mw = new Middleware(Method("WrongReturnType"));
 			});
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Must take 2 parameters (Request, Application).", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Must take 2 parameters (Request, Application).", () => {
 				mw = new Middleware(Method("NoParams"));
 			});
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Must take 2 parameters (Request, Application).", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Must take 2 parameters (Request, Application).", () => {
 				mw = new Middleware(Method("TooManyParams"));
 			});
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Parameter 1 must be a Request.", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Parameter 1 must be a Request.", () => {
 				mw = new Middleware(Method("WrongParamType1"));
 			});
 
-			Should.Throw<InvalidMiddlewareException>("This method cannot be used as a Middleware. Parameter 2 must be an Application.", () => {
+			Should.Throw<InvalidMiddlewareException>("cannot be used as a Middleware. Parameter 2 must be an Application.", () => {
 				mw = new Middleware(Method("WrongParamType2"));
 			});
 

@@ -38,23 +38,23 @@ namespace ConsoleRack.Specs {
 		public void raises_Exception_if_MethodInfo_doesnt_have_correct_parameters_and_whatnot() {
 			Application app;
 
-			Should.Throw<InvalidApplicationException>("This method cannot be used as an Application. Must be static.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must be static.", () => {
 				app = new Application(Method("InstanceMethod"));
 			});
 
-			Should.Throw<InvalidApplicationException>("This method cannot be used as an Application. Must return a Response.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must return a Response.", () => {
 				app = new Application(Method("WrongReturnType"));
 			});
 
-			Should.Throw<InvalidApplicationException>("This method cannot be used as an Application. Must take 1 parameter (Request).", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must take 1 parameter (Request).", () => {
 				app = new Application(Method("NoParams"));
 			});
 
-			Should.Throw<InvalidApplicationException>("This method cannot be used as an Application. Must take 1 parameter (Request).", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must take 1 parameter (Request).", () => {
 				app = new Application(Method("TooManyParams"));
 			});
 
-			Should.Throw<InvalidApplicationException>("This method cannot be used as an Application. Parameter must be a Request.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Parameter must be a Request.", () => {
 				app = new Application(Method("WrongParamType"));
 			});
 

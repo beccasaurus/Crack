@@ -60,18 +60,18 @@ namespace ConsoleRack {
 
 		/// <summary>Returns the full name of the Method, eg. "Namespace.MyClass.MyMethod"</summary>
 		public virtual string MethodFullName {
-			get { return (Method == null) ? null : Method.DeclaringType.FullName + "." + Method.Name; }
+			get { return Crack.FullMethodName(Method); }
 		}
 
 		/// <summary>This Application's name.  Defaults to the full name of the method by may be overriden.</summary>
 		public virtual string Name {
-			get { return _name ?? NameFromAttribute ?? MethodFullName; }
+			get { return _name ?? (ApplicationAttribute == null ? null : ApplicationAttribute.Name) ?? MethodFullName; }
 			set { _name = value; }
 		}
 
 		/// <summary>A description of this Application.  Useful if you have lots of applications you want to list/query.</summary>
 		public virtual string Description {
-			get { return _description ?? DescriptionFromAttribute; }
+			get { return _description ?? (ApplicationAttribute == null ? null : ApplicationAttribute.Description); }
 			set { _description = value; }
 		}
 
@@ -137,7 +137,7 @@ namespace ConsoleRack {
 					errors.Add("Parameter must be a Request");
 
 			if (errors.Count > 0) {
-				errors.Insert(0, "This method cannot be used as an Application");
+				errors.Insert(0, Crack.FullMethodName(method) + " cannot be used as an Application");
 				throw new InvalidApplicationException(string.Join(". ", errors.ToArray()) + ".");
 			}
 		}
@@ -154,15 +154,5 @@ namespace ConsoleRack {
 			var all = Crack.GetMethodInfos<ApplicationAttribute>(assembly).Select(method => new Application(method)).ToList();
 			return new ApplicationList(all);
 		}
-
-		#region Private
-		string NameFromAttribute {
-			get { return (ApplicationAttribute == null) ? null : ApplicationAttribute.Name; }
-		}
-
-		string DescriptionFromAttribute {
-			get { return (ApplicationAttribute == null) ? null : ApplicationAttribute.Description; }
-		}
-		#endregion
 	}
 }

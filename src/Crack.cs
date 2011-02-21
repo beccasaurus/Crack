@@ -36,6 +36,9 @@ namespace ConsoleRack {
 
 		/// <summary>If only 1 [Application] is found, we run that.</summary>
 		public static void Run(string[] args) {
+			Middlewares  = Middleware.From(Assembly.GetCallingAssembly());
+			Applications = Application.AllFromAssembly(Assembly.GetCallingAssembly());
+
 			if (Crack.Applications.Count == 1)
 				Run(Crack.Applications.First(), args);
 			else
@@ -47,7 +50,7 @@ namespace ConsoleRack {
 		/// If Crack.Middleware has not been set, we look for all [Middleware] in the calling assembly.
 		/// </remarks>
 		public static void Run(Application app, string[] args) {
-			app.Invoke(new Request(args), Crack.Middlewares);
+			app.Invoke(new Request(args), Crack.Middlewares).Execute();
 		}
 
 		/// <summary>Returns a list of all public static MethodInfo found in the given assembly that have the given attribute type</summary>
@@ -59,6 +62,11 @@ namespace ConsoleRack {
 					if (Attribute.IsDefined(method, attrType))
 						methods.Add(method);
 			return methods;
+		}
+
+		/// <summary>Returns the full name of the Method, eg. "Namespace.MyClass.MyMethod"</summary>
+		public static string FullMethodName(MethodInfo method) {
+			return (method == null) ? null : method.DeclaringType.FullName + "." + method.Name;
 		}
 	}
 }

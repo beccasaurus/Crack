@@ -13,18 +13,24 @@ namespace ConsoleRack {
 	}
 
 	/// <summary>The [Application] attribute for your application methods</summary>
-	public class MiddlewareAttribute : ApplicationAttribute {
-		public MiddlewareAttribute() : base(){
+	public class MiddlewareAttribute : Attribute {
+		public MiddlewareAttribute(){
 			First = false;
 			Last  = false;
 		}
-		public MiddlewareAttribute(string description) : base(description) {}
-		public MiddlewareAttribute(string name, string description) : base(name, description) {}
+		public MiddlewareAttribute(string description) : this() {
+			Description = description;
+		}
+		public MiddlewareAttribute(string name, string description) : this(description) {
+			Name = name;
+		}
 
-		public virtual string Before { get; set; }
-		public virtual string After  { get; set; }
-		public virtual bool First    { get; set; }
-		public virtual bool Last     { get; set; }
+		public virtual string Name        { get; set; }
+		public virtual string Description { get; set; }
+		public virtual string Before      { get; set; }
+		public virtual string After       { get; set; }
+		public virtual bool   First       { get; set; }
+		public virtual bool   Last        { get; set; }
 	}
 
 	/// <summary>Custom List of Middleware that lets you easily get an Middleware by name</summary>
@@ -93,7 +99,7 @@ namespace ConsoleRack {
 		public Middleware(MethodInfo method) : base(method) {}
 
 		MiddlewareAttribute _attribute;
-		string _before, _after;
+		string _name, _description, _before, _after;
 		bool? _first, _last;
 
 		/// <summary>This Middleware's inner application that it gets called with and can Invoke()</summary>
@@ -105,6 +111,18 @@ namespace ConsoleRack {
 				if (_attribute == null) _attribute = GetCustomAttribute<MiddlewareAttribute>(Method);
 				return _attribute;
 			}
+		}
+
+		/// <summary>This Middleware's name.  Defaults to the full name of the method by may be overriden.</summary>
+		public virtual string Name {
+			get { return _name ?? ((MiddlewareAttribute == null ? null : MiddlewareAttribute.Name)) ?? MethodFullName; }
+			set { _name = value; }
+		}
+
+		/// <summary>A description of this Middleware.  Useful if you have lots of middlewares you want to list/query.</summary>
+		public virtual string Description {
+			get { return _description ?? (MiddlewareAttribute == null ? null : MiddlewareAttribute.Description); }
+			set { _description = value; }
 		}
 
 		public virtual string Before {
@@ -152,7 +170,7 @@ namespace ConsoleRack {
 			}
 
 			if (errors.Count > 0) {
-				errors.Insert(0, "This method cannot be used as a Middleware");
+				errors.Insert(0, Crack.FullMethodName(method) + " cannot be used as a Middleware");
 				throw new InvalidMiddlewareException(string.Join(". ", errors.ToArray()) + ".");
 			}
 		}
