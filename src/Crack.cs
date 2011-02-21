@@ -15,10 +15,10 @@ namespace ConsoleRack {
 	/// </remarks>
 	public class Crack {
 
-		static List<Middleware>  _middlewares;
-		static List<Application> _applications;
+		static MiddlewareList  _middlewares;
+		static ApplicationList _applications;
 
-		public static List<Middleware> Middlewares {
+		public static MiddlewareList Middlewares {
 			get {
 				if (_middlewares == null) _middlewares = Middleware.From(Assembly.GetCallingAssembly());
 				return _middlewares;
@@ -26,7 +26,7 @@ namespace ConsoleRack {
 			set { _middlewares = value; }
 		}
 
-		public static List<Application> Applications {
+		public static ApplicationList Applications {
 			get {
 				if (_applications == null) _applications = Application.AllFromAssembly(Assembly.GetCallingAssembly());
 				return _applications;

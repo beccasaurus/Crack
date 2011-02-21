@@ -1,6 +1,8 @@
 *.exe
 *.dll
 *.sw?
+*.pidb
+*.userprefs
 bin
 obj
 TestResult.xml

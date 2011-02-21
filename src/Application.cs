@@ -28,6 +28,9 @@ namespace ConsoleRack {
 
 	/// <summary>Custom List of Application that lets you easily get an Application by name</summary>
 	public class ApplicationList : List<Application>, IList<Application>, IEnumerable<Application> {
+		public ApplicationList() : base(){}
+		public ApplicationList(IEnumerable<Application> apps) : base(apps){}
+
 		public virtual Application this[string name] {
 			get { return this.FirstOrDefault(app => app.Name == name); }
 		}
@@ -140,15 +143,16 @@ namespace ConsoleRack {
 		}
 
 		/// <summary>Returns all of the Application found in the given assemblies (see <c>AllFromAssembly</c></summary>
-		public static List<Application> AllFromAssemblies(params Assembly[] assemblies) {
-			var applications = new List<Application>();
+		public static ApplicationList AllFromAssemblies(params Assembly[] assemblies) {
+			var applications = new ApplicationList();
 			foreach (var assembly in assemblies) applications.AddRange(AllFromAssembly(assembly));
 			return applications;
 		}
 
 		/// <summary>Returns all of the Application found in the given Assembly (my looking for public static methods decorated with [Application]</summary>
-		public static List<Application> AllFromAssembly(Assembly assembly) {
-			return Crack.GetMethodInfos<ApplicationAttribute>(assembly).Select(method => new Application(method)).ToList();
+		public static ApplicationList AllFromAssembly(Assembly assembly) {
+			var all = Crack.GetMethodInfos<ApplicationAttribute>(assembly).Select(method => new Application(method)).ToList();
+			return new ApplicationList(all);
 		}
 
 		#region Private
