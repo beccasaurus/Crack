@@ -159,6 +159,51 @@ of the `Before` middleware before the specified middleware, and of of the `After
 **NOTE** If no middleware is found with the name specified in `Before` or `After`, the middleware is NOT RUN.
 before invoking the actual application).
 
+### Commands
+
+Commands are totally optional.  That said, MOST of the CLI applications that you write will have commands, eg:
+
+    gem search -some arguments
+    gem list
+    gem foo --bar
+
+Where `gem` is our executable and `search`, `list`, and `foo` are commands.
+
+Not every CLI application is written like this, but many are.
+
+So ... we added the `[Command]` attribute which is currently used *EXACTLY* like the `[Application]` attribute. 
+The only difference is that Crack can auto-find your `[Command]` attributes and return them to you as `Command` objects. 
+The `Command` class, itself, is really just a base-class of `Application` with nearly no functionality added.
+
+    [Command("foo", "totally awesome command")]
+    public static Response Foo(Request req) {
+      return new Response("You called Foo");
+    }
+
+    [Command("bar", "much cooler command than foo")]
+    public static Response Bar(Request req) {
+      return new Response("You called Bar!  Bar Rules!");
+    }
+
+    [Application]
+    public static Response OurMainApp(Request req) {
+      var arguments = new List<string>(req.Arguments);
+      var firstArg  = arguments.First(); arguments.RemoveAt(0);
+      var commands  = Crack.Commands.Match(firstArg);
+      req.Arguments = arguments.ToArray();
+
+      if (commands.Count == 0)
+        return new Response("Command not found: {0}", firstArg);
+      else if (commands.Count == 1)
+        return commands.First().Invoke(req);
+      else {
+        var ambiguousMatches = string.Join(", ", commands.Select(c => c.Name).ToArray());
+        return new Response("{0} was ambiguous with these commands: {1}", firstArg, ambiguousMatches);
+      }
+    }
+
+That's just one example of how you could use commands.  But, again, a `[Command]` is really nothing more than an `[Application]`!
+
 ## Is this shit really useful?
 
 To me: YES.
