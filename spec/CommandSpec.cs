@@ -161,6 +161,20 @@ namespace ConsoleRack.Specs {
 			list.StartingWith("x").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ });
 		}
 
+		[Test]
+		public void can_match_commands_with_certain_text_from_a_CommandList() {
+			var list = new CommandList();
+
+			list.Add(new Command(Method("Foo")){ Name = "foo" });
+			list.Add(new Command(Method("Foo")){ Name = "foot" });
+
+			list.Match("f").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo", "foot" });
+			list.Match("fo").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo", "foot" });
+			list.Match("foo").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo" }); // EXACT MATCH, so we don't return foot
+			list.Match("foot").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foot" });
+			list.Match("foott").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{  });
+		}
+
 		[Test][Ignore]
 		public void can_get_all_commands_in_an_assembly() {
 		}

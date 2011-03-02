@@ -21,5 +21,17 @@ namespace ConsoleRack {
 		public virtual CommandList StartingWith(string query) {
 			return new CommandList(this.Where(cmd => cmd.Name.StartsWith(query)).OrderBy(cmd => cmd.Name).ToList());
 		}
+
+		/// <summary>Similar to StartingWith but, if there's an exact match found, it overrides all others!</summary>
+		/// <remarks>
+		/// *This* is what you really want to use if you want to support partial commands
+		/// </remarks>
+		public virtual CommandList Match(string query) {
+			var exact = this[query];
+			if (exact != null)
+				return new CommandList { exact };
+			else
+				return StartingWith(query);
+		}
 	}
 }
