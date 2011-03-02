@@ -108,9 +108,14 @@ namespace ConsoleRack {
 					errors.Add("Parameter must be a Request");
 
 			if (errors.Count > 0) {
-				errors.Insert(0, Crack.FullMethodName(method) + " cannot be used as an Application");
-				throw new InvalidApplicationException(string.Join(". ", errors.ToArray()) + ".");
+				errors.Insert(0, Crack.FullMethodName(method) + " cannot be used as " + this.GetType().Name);
+				ThrowInvalidException(string.Join(". ", errors.ToArray()) + ".");
 			}
+		}
+
+		/// <summary>Throws an InvalidApplicationException.  Can be overriden to throw InvalidMiddlewareException, etc.</summary>
+		public virtual void ThrowInvalidException(string message) {
+			throw new InvalidApplicationException(message);
 		}
 
 		/// <summary>Returns all of the Application found in the given assemblies (see <c>AllFromAssembly</c></summary>

@@ -8,8 +8,8 @@ using System.Collections.Generic;
 namespace ConsoleRack {
 
 	/// <summary>The [Middleware] attribute for your middleware methods</summary>
-	public class MiddlewareAttribute : Attribute {
-		public MiddlewareAttribute(){
+	public class MiddlewareAttribute : ApplicationAttribute {
+		public MiddlewareAttribute() {
 			First = false;
 			Last  = false;
 		}
@@ -20,8 +20,6 @@ namespace ConsoleRack {
 			Name = name;
 		}
 
-		public virtual string Name        { get; set; }
-		public virtual string Description { get; set; }
 		public virtual string Before      { get; set; }
 		public virtual string After       { get; set; }
 		public virtual bool   First       { get; set; }

@@ -38,23 +38,23 @@ namespace ConsoleRack.Specs {
 		public void raises_Exception_if_MethodInfo_doesnt_have_correct_parameters_and_whatnot() {
 			Application app;
 
-			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must be static.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as Application. Must be static.", () => {
 				app = new Application(Method("InstanceMethod"));
 			});
 
-			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must return a Response.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as Application. Must return a Response.", () => {
 				app = new Application(Method("WrongReturnType"));
 			});
 
-			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must take 1 parameter (Request).", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as Application. Must take 1 parameter (Request).", () => {
 				app = new Application(Method("NoParams"));
 			});
 
-			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Must take 1 parameter (Request).", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as Application. Must take 1 parameter (Request).", () => {
 				app = new Application(Method("TooManyParams"));
 			});
 
-			Should.Throw<InvalidApplicationException>("cannot be used as an Application. Parameter must be a Request.", () => {
+			Should.Throw<InvalidApplicationException>("cannot be used as Application. Parameter must be a Request.", () => {
 				app = new Application(Method("WrongParamType"));
 			});
 
@@ -139,13 +139,13 @@ namespace ConsoleRack.Specs {
 		}
 
 		[Test]
-		public void can_by_run_given_1_middleware() {
+		public void can_be_run_given_1_middleware() {
 			var response = new Application(Method("Foo")).Invoke(new Request("hello"), new Middleware(Method("WriteBeforeAndAfter")));
 			response.Text.ShouldEqual("BEFORE\nYou requested: hello\n\nAFTER");
 		}
 
 		[Test]
-		public void can_by_run_given_2_middleware() {
+		public void can_be_run_given_2_middleware() {
 			var middleware1 = new Middleware(Method("WriteBeforeAndAfter"));
 			var middleware2 = new Middleware(Method("WriteBeforeAndAfter"));
 			var response    = new Application(Method("Foo")).Invoke(new Request("hello"), middleware1, middleware2);
@@ -153,7 +153,7 @@ namespace ConsoleRack.Specs {
 		}
 
 		[Test][Ignore]
-		public void can_by_run_given_a_list_of_middleware() {
+		public void can_be_run_given_a_list_of_middleware() {
 		}
 
 		[Test][Ignore]

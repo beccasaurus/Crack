@@ -17,6 +17,7 @@ namespace ConsoleRack {
 
 		static MiddlewareList  _middlewares;
 		static ApplicationList _applications;
+		static CommandList     _commands;
 
 		public static MiddlewareList Middlewares {
 			get {
@@ -34,10 +35,20 @@ namespace ConsoleRack {
 			set { _applications = value; }
 		}
 
+		public static CommandList Commands {
+			get {
+				if (_commands == null) _commands = Command.AllFromAssembly(Assembly.GetCallingAssembly());
+				return _commands;
+			}
+			set { _commands = value; }
+		}
+
 		/// <summary>If only 1 [Application] is found, we run that.</summary>
 		public static void Run(string[] args) {
-			Middlewares  = Middleware.From(Assembly.GetCallingAssembly());
-			Applications = Application.AllFromAssembly(Assembly.GetCallingAssembly());
+			var calling  = Assembly.GetCallingAssembly(); 
+			Middlewares  = Middleware.From(calling);
+			Applications = Application.AllFromAssembly(calling);
+			Commands     = Command.AllFromAssembly(calling);
 
 			if (Crack.Applications.Count == 1)
 				Run(Crack.Applications.First(), args);
@@ -59,9 +70,24 @@ namespace ConsoleRack {
 			var attrType = typeof(T);
 			foreach (var type in assembly.GetTypes())
 				foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-					if (Attribute.IsDefined(method, attrType))
+					if (MethodHasAttribute(method, attrType))
 						methods.Add(method);
 			return methods;
+		}
+
+		/// <summary>Quick helper to see if a method has a custom attribute of a given type.</summary>
+		/// <remarks>
+		/// Type must be an exact match, eg. not a base class.
+		/// </remarks>
+		public static bool MethodHasAttribute(MethodInfo method, Type attributeType) {
+			var hasAttribute = false;
+			foreach (var attribute in method.GetCustomAttributes(false)) {
+				if (attribute.GetType() == attributeType) {
+					hasAttribute = true;
+					break;
+				}
+			}
+			return hasAttribute;
 		}
 
 		/// <summary>Returns the full name of the Method, eg. "Namespace.MyClass.MyMethod"</summary>
