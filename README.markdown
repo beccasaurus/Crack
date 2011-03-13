@@ -274,6 +274,11 @@ required to use Crack at *all*.
 
     // Note: when you pass in middleware, we automatically order them using First/Last/Before/After ... you don't need to do that yourself.
 
+TODO
+----
+
+ - I'd like to change Request.Arguments to a `List<string>` because I find that I'm *constantly* converting it into a list
+
 License
 -------
 
