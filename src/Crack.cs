@@ -43,6 +43,24 @@ namespace ConsoleRack {
 			set { _commands = value; }
 		}
 
+		/// <summary>The same as Crack.Run(), except it returns the final Response (without Executing it)</summary>
+		public static Response Invoke(string[] args) {
+			// TODO Dry this and Run() up ... actually, what we really need to do is *TEST* these methods!
+			//
+			//      Untested == Scary!
+			//
+
+			var calling  = Assembly.GetCallingAssembly(); 
+			Middlewares  = Middleware.From(calling);
+			Applications = Application.AllFromAssembly(calling);
+			Commands     = Command.AllFromAssembly(calling);
+
+			if (Crack.Applications.Count == 1)
+				return Crack.Applications.First().Invoke(new Request(args), Middlewares);
+			else
+				throw new Exception("Unless there is exactly 1 [Application] found, you must pass an Application to Run()");
+		}
+
 		/// <summary>If only 1 [Application] is found, we run that.</summary>
 		public static void Run(string[] args) {
 			var calling  = Assembly.GetCallingAssembly(); 
