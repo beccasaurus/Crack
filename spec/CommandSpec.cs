@@ -170,7 +170,7 @@ namespace ConsoleRack.Specs {
 
 			list.Match("f").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo", "foot" });
 			list.Match("fo").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo", "foot" });
-			list.Match("foo").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo" }); // EXACT MATCH, so we don't return foot
+			list.Match("foo").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foo" }); // EXACT MATCH, so we don't return foot // TODO change this ... if using Match, user can check if any of the results are a command via list.IsCommand("") ... or we need to add something like that.  this result is currently unintuitive.
 			list.Match("foot").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{ "foot" });
 			list.Match("foott").Select(cmd => cmd.Name).ToArray().ShouldEqual(new string[]{  });
 		}

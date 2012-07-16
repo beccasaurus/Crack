@@ -13,6 +13,8 @@ namespace ConsoleRack {
 	/// </remarks>
 	public class Command : Application {
 
+		// TODO add support for setting the Parent of a command, giving us subcommands (with subcommands, and so on)
+
 		/// <summary>Command constructor.  Making an command requires a MethodInfo.</summary>
 		public Command(MethodInfo method) : base(method) {}
 
